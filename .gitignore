@@ -112,3 +112,10 @@ venv.bak/
 
 
 # End of https://www.gitignore.io/api/python
+
+
+# macOS
+.DS_Store
+
+# downloaded ugoira frames
+ugoira_*/
