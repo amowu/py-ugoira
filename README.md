@@ -8,7 +8,7 @@ usage: py_ugoira.py [-h] [--pixiv_id PIXIV_ID] [--frames_path FRAMES_PATH]
                     [--process {all,getframes,convertframes}]
                     [--video_output VIDEO_OUTPUT] [--interpolate]
                     [--ffmpeg_path FFMPEG_PATH] [--ffmpeg_args FFMPEG_ARGS]
-                    [-v]
+                    [--cookie COOKIE] [-v]
 
 Python script to download and convert an ugoira animation on Pixiv, and
 convert it to a video via FFmpeg.
@@ -41,6 +41,10 @@ optional arguments:
                         The arguments for FFmpeg. Defaults to "-c:v libvpx
                         -crf 10 -b:v 2M -an", which is VP8 WEBM with a
                         variable bitrate of 2 MBit/s, with no audio.
+  --cookie COOKIE       The cookie to send when fetching the ugoira data, e.g.
+                        "PHPSESSID=12345_abcde". Required for ugoira that need
+                        a login, such as R-18 works. A bare value without "="
+                        is treated as the PHPSESSID.
   -v, --verbose         Forces the system to print out verbose process
                         messages.
 ```
@@ -61,7 +65,25 @@ python py_ugoira.py --frames_path ./ugoira_69689053 --process convertframes \
     --ffmpeg_path "C:\ffmpeg\ffmpeg.exe" \
     --ffmpeg_args "-c:v libx264 -profile:v baseline -pix_fmt yuv420p -an" \
     --verbose
+
+# fetch a ugoira that requires login (e.g. R-18), using the PHPSESSID cookie
+# from a logged-in browser session
+python py_ugoira.py --pixiv_id 69689053 --cookie "PHPSESSID=12345_abcde"
 ```
+
+
+### Login cookie
+
+Some ugoira, such as R-18 works, can only be fetched while logged in. Without a
+login, Pixiv responds with `HTTP Error 404: Not Found` for those works.
+
+To fetch them, copy the `PHPSESSID` cookie from a browser that is logged in to
+Pixiv (DevTools → Application → Cookies → `https://www.pixiv.net`), and pass it
+with `--cookie`. Both `"PHPSESSID=<value>"` and the bare `<value>` are
+accepted.
+
+The cookie grants access to your Pixiv account, so do not commit it or share
+it, and keep in mind that it is saved to your shell history.
 
 
 ### License

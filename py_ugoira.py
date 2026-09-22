@@ -12,7 +12,7 @@ import urllib.request
 import zipfile
 
 
-def get_ugoira_frames(pixiv_id, output_path, verbose=False):
+def get_ugoira_frames(pixiv_id, output_path, cookie=None, verbose=False):
     base_pixiv_url = f'https://www.pixiv.net/en/artworks/{pixiv_id}'
     meta_pixiv_url = f'https://www.pixiv.net/ajax/illust/{pixiv_id}/ugoira_meta'
     user_agent = 'Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0'
@@ -24,6 +24,8 @@ def get_ugoira_frames(pixiv_id, output_path, verbose=False):
     req.add_header('Referer', base_pixiv_url)
     req.add_header('User-Agent', user_agent)
     req.add_header('Accept', 'application/json')
+    if cookie:
+        req.add_header('Cookie', cookie)
 
     with urllib.request.urlopen(req) as res:
         res_text = res.read().decode('utf-8')
@@ -177,6 +179,15 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        '--cookie', type=str, required=False,
+        help=(
+            'The cookie to send when fetching the ugoira data, e.g. '
+            '"PHPSESSID=12345_abcde". Required for ugoira that need a login, '
+            'such as R-18 works. A bare value without "=" is treated as the '
+            'PHPSESSID.'
+        ),
+    )
+    parser.add_argument(
         '-v', '--verbose', action='store_true',
         help='Forces the system to print out verbose process messages.',
     )
@@ -189,6 +200,9 @@ def parse_args():
 
     if args.process == 'convertframes' and not args.frames_path:
         parser.error(f'{msg_required} --frames_path')
+
+    if args.cookie and '=' not in args.cookie:
+        args.cookie = f'PHPSESSID={args.cookie}'
 
     return args
 
@@ -204,6 +218,7 @@ if __name__ == '__main__':
         is_success = get_ugoira_frames(
             args.pixiv_id,
             ugoira_path,
+            args.cookie,
             args.verbose,
         )
 
