@@ -66,10 +66,33 @@ python py_ugoira.py --frames_path ./ugoira_69689053 --process convertframes \
     --ffmpeg_args "-c:v libx264 -profile:v baseline -pix_fmt yuv420p -an" \
     --verbose
 
+# convert illustration ID 69689053 to mp4 (H.264)
+python py_ugoira.py --pixiv_id 69689053 --video_output output.mp4 \
+    --ffmpeg_args "-c:v libx264 -pix_fmt yuv420p -an"
+
 # fetch a ugoira that requires login (e.g. R-18), using the PHPSESSID cookie
 # from a logged-in browser session
 python py_ugoira.py --pixiv_id 69689053 --cookie "PHPSESSID=12345_abcde"
 ```
+
+
+### Output formats
+
+The container is picked from the extension of `--video_output`, and the codec
+from `--ffmpeg_args`. The default arguments encode VP8, which only fits in
+`.webm` or `.mkv`, so changing the extension alone is not enough.
+
+| Output | `--ffmpeg_args` |
+|---|---|
+| `.webm` (VP8, default) | `-c:v libvpx -crf 10 -b:v 2M -an` |
+| `.mp4` (H.264) | `-c:v libx264 -pix_fmt yuv420p -an` |
+
+`-pix_fmt yuv420p` is needed for the mp4 to play in browsers and QuickTime,
+since the ugoira frames are usually decoded as `yuvj444p`.
+
+Note that FFmpeg runs inside the frames folder, so a relative `--video_output`
+ends up in `ugoira_<pixiv_id>/`. Pass an absolute path, such as
+`"$PWD/output.mp4"`, to write it elsewhere.
 
 
 ### Login cookie
