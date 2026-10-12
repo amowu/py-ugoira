@@ -68,7 +68,7 @@ python py_ugoira.py --frames_path ./ugoira_69689053 --process convertframes \
 
 # convert illustration ID 69689053 to mp4 (H.264)
 python py_ugoira.py --pixiv_id 69689053 --video_output output.mp4 \
-    --ffmpeg_args "-c:v libx264 -pix_fmt yuv420p -an"
+    --ffmpeg_args="-vf scale=trunc(iw/2)*2:trunc(ih/2)*2 -c:v libx264 -pix_fmt yuv420p -an"
 
 # fetch a ugoira that requires login (e.g. R-18), using the PHPSESSID cookie
 # from a logged-in browser session
@@ -85,10 +85,17 @@ from `--ffmpeg_args`. The default arguments encode VP8, which only fits in
 | Output | `--ffmpeg_args` |
 |---|---|
 | `.webm` (VP8, default) | `-c:v libvpx -crf 10 -b:v 2M -an` |
-| `.mp4` (H.264) | `-c:v libx264 -pix_fmt yuv420p -an` |
+| `.mp4` (H.264) | `-vf scale=trunc(iw/2)*2:trunc(ih/2)*2 -c:v libx264 -pix_fmt yuv420p -an` |
 
 `-pix_fmt yuv420p` is needed for the mp4 to play in browsers and QuickTime,
 since the ugoira frames are usually decoded as `yuvj444p`.
+
+That pixel format also needs both dimensions to be even, and plenty of ugoira
+are not, which fails with `height not divisible by 2`. The `scale` filter
+rounds an odd side down to the nearest even number, cropping a single row or
+column of pixels. It is a no-op on frames that are already even, so it can
+stay in the arguments. To pad instead of crop, use
+`-vf pad=ceil(iw/2)*2:ceil(ih/2)*2`, which adds a black row or column.
 
 Note that FFmpeg runs inside the frames folder, so a relative `--video_output`
 ends up in `ugoira_<pixiv_id>/`. Pass an absolute path, such as
